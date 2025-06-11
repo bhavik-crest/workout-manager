@@ -11,6 +11,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class WorkoutResource extends Resource
 {
@@ -25,6 +26,8 @@ class WorkoutResource extends Resource
                 Forms\Components\Select::make('user_id')
                     ->relationship('user', 'name')
                     ->required()
+                    ->default(Auth::id())
+                    ->disabled()
                     ->searchable(),
                 Forms\Components\TextInput::make('title')
                     ->required()
@@ -85,10 +88,10 @@ class WorkoutResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn (Workout $record) => Auth::user()->can('update', $record)),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn (Workout $record) => Auth::user()->can('delete', $record)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -117,9 +120,20 @@ class WorkoutResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
+        $query = parent::getEloquentQuery();
+
+        // Only show workouts belonging to the current user unless they are admin
+        if (auth()->user()?->email !== 'admin@example.com') {
+            $query->where('user_id', auth()->id());
+        }
+
+        return $query->withoutGlobalScopes([
+            SoftDeletingScope::class,
+        ]);
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return true;
     }
 } 

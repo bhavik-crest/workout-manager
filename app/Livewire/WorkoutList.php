@@ -12,7 +12,7 @@ class WorkoutList extends Component
 
     public $search = '';
     public $trainer = '';
-    public $sortField = 'created_at';
+    public $sortField = 'date';
     public $sortDirection = 'desc';
     public $workoutToDelete = null;
     public $showDeleteModal = false;
@@ -20,7 +20,7 @@ class WorkoutList extends Component
     protected $queryString = [
         'search' => ['except' => ''],
         'trainer' => ['except' => ''],
-        'sortField' => ['except' => 'created_at'],
+        'sortField' => ['except' => 'date'],
         'sortDirection' => ['except' => 'desc'],
     ];
 
@@ -71,7 +71,10 @@ class WorkoutList extends Component
         $workouts = Workout::query()
             ->where('user_id', auth()->id())
             ->when($this->search, function ($query) {
-                $query->where('title', 'like', '%' . $this->search . '%');
+                $query->where(function($q) {
+                    $q->where('title', 'like', '%' . $this->search . '%')
+                      ->orWhere('description', 'like', '%' . $this->search . '%');
+                });
             })
             ->when($this->trainer, function ($query) {
                 $query->where('trainer', 'like', '%' . $this->trainer . '%');

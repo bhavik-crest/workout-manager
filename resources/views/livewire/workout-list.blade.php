@@ -70,23 +70,62 @@
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
                 <thead class="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                     <tr>
-                        @foreach (['title' => 'Title', 'trainer' => 'Trainer', 'created_at' => 'Date'] as $field => $label)
-                            <th class="px-6 py-3 text-left font-medium uppercase cursor-pointer" wire:click="sortBy('{{ $field }}')">
-                                {{ $label }}
-                                @if ($sortField === $field)
-                                    {{ $sortDirection === 'asc' ? '↑' : '↓' }}
-                                @endif
-                            </th>
-                        @endforeach
-                        <th class="px-6 py-3 text-left font-medium uppercase">Actions</th>
+                        <th class="w-1/3 px-6 py-3 text-left font-medium uppercase cursor-pointer" wire:click="sortBy('title')">
+                            Title
+                            @if ($sortField === 'title')
+                                {{ $sortDirection === 'asc' ? '↑' : '↓' }}
+                            @endif
+                        </th>
+                        <th class="w-1/6 px-6 py-3 text-left font-medium uppercase cursor-pointer" wire:click="sortBy('trainer')">
+                            Trainer
+                            @if ($sortField === 'trainer')
+                                {{ $sortDirection === 'asc' ? '↑' : '↓' }}
+                            @endif
+                        </th>
+                        <th class="w-1/6 px-6 py-3 text-left font-medium uppercase cursor-pointer" wire:click="sortBy('is_active')">
+                            Status
+                            @if ($sortField === 'is_active')
+                                {{ $sortDirection === 'asc' ? '↑' : '↓' }}
+                            @endif
+                        </th>
+                        <th class="w-1/6 px-6 py-3 text-left font-medium uppercase cursor-pointer" wire:click="sortBy('date')">
+                            Date & Time
+                            @if ($sortField === 'date')
+                                {{ $sortDirection === 'asc' ? '↑' : '↓' }}
+                            @endif
+                        </th>
+                        <th class="w-1/6 px-6 py-3 text-left font-medium uppercase">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                     @forelse ($workouts as $workout)
                         <tr>
-                            <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ $workout->title }}</td>
+                            <td class="px-6 py-4">
+                                <div class="space-y-1 max-w-xs">
+                                    <div class="font-medium text-gray-900 dark:text-white truncate">{{ $workout->title }}</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
+                                        {{ $workout->description }}
+                                    </div>
+                                </div>
+                            </td>
                             <td class="px-6 py-4 text-gray-500 dark:text-gray-300">{{ $workout->trainer }}</td>
-                            <td class="px-6 py-4 text-gray-500 dark:text-gray-300">{{ $workout->created_at->format('Y-m-d') }}</td>
+                            <td class="px-6 py-4">
+                                @if($workout->is_active)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                        Active
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                        Inactive
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 text-gray-500 dark:text-gray-300">
+                                <div class="flex flex-col">
+                                    <span class="font-medium">{{ $workout->date->format('M j, Y') }}</span>
+                                    <span class="text-sm">{{ $workout->date->format('g:i A') }}</span>
+                                </div>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-3 items-center">
                                 <!-- Edit Icon (Pencil Square) -->
                                 <a href="{{ route('workouts.edit', $workout) }}" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300" title="Edit">
@@ -106,7 +145,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-4 text-center text-gray-500 dark:text-gray-300">No workouts found.</td>
+                            <td colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-300">No workouts found.</td>
                         </tr>
                     @endforelse
                 </tbody>
