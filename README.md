@@ -2,15 +2,6 @@
 
 A modern workout management application built with Laravel, Livewire, and Tailwind CSS.
 
-## Features
-
-- 🏋️‍♂️ Create and manage workouts
-- 🔍 Search workouts by title
-- 👥 Filter workouts by trainer
-- 🌓 Dark mode support
-- 🎯 Real-time search and filtering
-- 📱 Responsive design
-
 ## Prerequisites
 
 - PHP >= 8.1
@@ -74,15 +65,9 @@ A modern workout management application built with Laravel, Livewire, and Tailwi
 8. **Start the Development Server**
    ```bash
    php artisan serve
+   php artisan db:seed
    ```
 
 9. **Access the Application**
-   - Visit `http://localhost:8000` in your browser
-
-## Development
-
-### Key Directories
-- `app/Http/Livewire` - Livewire components
-- `resources/views/livewire` - Blade views for Livewire components
-- `database/migrations` - Database migrations
-- `routes` - Application routes
+   - Visit `http://localhost:8000/admin` in your browser (For Admin)
+   - Visit `http://localhost:8000` in your browser (For User)
