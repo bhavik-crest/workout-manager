@@ -51,6 +51,7 @@ A modern workout management application built with Laravel, Livewire, and Tailwi
 6. **Run Migrations**
    ```bash
    php artisan migrate
+   php artisan db:seed
    ```
 
 7. **Build Assets**
@@ -65,7 +66,6 @@ A modern workout management application built with Laravel, Livewire, and Tailwi
 8. **Start the Development Server**
    ```bash
    php artisan serve
-   php artisan db:seed
    ```
 
 9. **Access the Application**
