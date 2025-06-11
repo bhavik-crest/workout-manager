@@ -27,7 +27,7 @@ class WorkoutResource extends Resource
                     ->relationship('user', 'name')
                     ->required()
                     ->default(Auth::id())
-                    ->disabled()
+                    ->disabled(fn () => auth()->user()?->email !== 'admin@example.com')
                     ->searchable(),
                 Forms\Components\TextInput::make('title')
                     ->required()

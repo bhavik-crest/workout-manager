@@ -31,9 +31,12 @@ class UserResource extends Resource
                     ->unique(ignoreRecord: true),
                 Forms\Components\TextInput::make('password')
                     ->password()
-                    ->dehydrateStateUsing(fn (string $state): string => Hash::make($state))
+                    ->dehydrateStateUsing(fn (?string $state): ?string => 
+                        filled($state) ? Hash::make($state) : null
+                    )
                     ->required(fn (string $operation): bool => $operation === 'create')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->dehydrated(fn (?string $state): bool => filled($state)),
             ]);
     }
 
