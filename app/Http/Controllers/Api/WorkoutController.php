@@ -9,6 +9,7 @@ use App\Http\Resources\WorkoutResource;
 use App\Models\Workout;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Exception;
 
 class WorkoutController extends Controller
 {
@@ -17,19 +18,27 @@ class WorkoutController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        $workouts = $request->user()->workouts()
-            ->when($request->filled('is_active'), function ($query) use ($request) {
-                $query->where('is_active', $request->boolean('is_active'));
-            })
-            ->when($request->filled('sort'), function ($query) use ($request) {
-                $direction = $request->input('direction', 'asc');
-                $query->orderBy('date', $direction);
-            }, function ($query) {
-                $query->latest('date');
-            })
-            ->paginate(10);
+        try {
+            $workouts = $request->user()->workouts()
+                ->when($request->filled('is_active'), function ($query) use ($request) {
+                    $query->where('is_active', $request->boolean('is_active'));
+                })
+                ->when($request->filled('sort'), function ($query) use ($request) {
+                    $direction = $request->input('direction', 'asc');
+                    $query->orderBy('date', $direction);
+                }, function ($query) {
+                    $query->latest('date');
+                })
+                ->paginate(10);
 
-        return WorkoutResource::collection($workouts);
+            return WorkoutResource::collection($workouts);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Failed to fetch workouts',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -37,12 +46,20 @@ class WorkoutController extends Controller
      */
     public function store(StoreWorkoutRequest $request)
     {
-        $workout = $request->user()->workouts()->create($request->validated());
+        try {
+            $workout = $request->user()->workouts()->create($request->validated());
 
-        return response()->json([
-            'message' => 'Workout created successfully.',
-            'data' => new WorkoutResource($workout),
-        ], 201);
+            return response()->json([
+                'message' => 'Workout created successfully',
+                'data' => new WorkoutResource($workout)
+            ], 201);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Failed to create workout',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -50,15 +67,23 @@ class WorkoutController extends Controller
      */
     public function show(Request $request, Workout $workout)
     {
-        if ($workout->user_id !== $request->user()->id) {
-            return response()->json([
-                'message' => 'You are not authorized to view this workout.',
-            ], 403);
-        }
+        try {
+            if ($workout->user_id !== $request->user()->id) {
+                return response()->json([
+                    'message' => 'You are not authorized to view this workout'
+                ], 403);
+            }
 
-        return response()->json([
-            'data' => new WorkoutResource($workout),
-        ]);
+            return response()->json([
+                'data' => new WorkoutResource($workout)
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Failed to fetch workout',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -66,12 +91,20 @@ class WorkoutController extends Controller
      */
     public function update(UpdateWorkoutRequest $request, Workout $workout)
     {
-        $workout->update($request->validated());
+        try {
+            $workout->update($request->validated());
 
-        return response()->json([
-            'message' => 'Workout updated successfully.',
-            'data' => new WorkoutResource($workout),
-        ]);
+            return response()->json([
+                'message' => 'Workout updated successfully',
+                'data' => new WorkoutResource($workout)
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Failed to update workout',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -79,16 +112,24 @@ class WorkoutController extends Controller
      */
     public function destroy(Request $request, Workout $workout)
     {
-        if ($workout->user_id !== $request->user()->id) {
+        try {
+            if ($workout->user_id !== $request->user()->id) {
+                return response()->json([
+                    'message' => 'You are not authorized to delete this workout'
+                ], 403);
+            }
+
+            $workout->delete();
+
             return response()->json([
-                'message' => 'You are not authorized to delete this workout.',
-            ], 403);
+                'message' => 'Workout deleted successfully'
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Failed to delete workout',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $workout->delete();
-
-        return response()->json([
-            'message' => 'Workout deleted successfully.',
-        ]);
     }
 } 
