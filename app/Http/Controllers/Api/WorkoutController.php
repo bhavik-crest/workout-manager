@@ -9,6 +9,7 @@ use App\Http\Resources\WorkoutResource;
 use App\Models\Workout;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\JsonResponse;
 use Exception;
 
 class WorkoutController extends Controller
@@ -16,7 +17,7 @@ class WorkoutController extends Controller
     /**
      * Display a listing of the workouts.
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection|JsonResponse
     {
         try {
             $workouts = $request->user()->workouts()
