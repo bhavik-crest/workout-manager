@@ -80,5 +80,5 @@ A modern workout management application built with Laravel, Livewire, and Tailwi
 - Password: `password`
 
 ### Test User Account
-- Email: `test@example.com`
+- Email: `user@example.com`
 - Password: `password`
