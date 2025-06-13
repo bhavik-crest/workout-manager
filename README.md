@@ -72,7 +72,8 @@ A modern workout management application built with Laravel, Livewire, and Tailwi
    - Visit `http://localhost:8000/admin` in your browser (For Admin)
    - Visit `http://localhost:8000` in your browser (For User)
 
-## Default Login Credentials
+### API Documentation
+- [View API Documentation](https://documenter.getpostman.com/view/32355039/2sB2x6mCSj)
 
 ### Admin Panel (Filament)
 - URL: `/admin`
