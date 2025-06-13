@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\JsonResponse;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class WorkoutController extends Controller
 {
@@ -30,7 +31,7 @@ class WorkoutController extends Controller
                 }, function ($query) {
                     $query->latest('date');
                 })
-                ->paginate(10);
+                ->get();
 
             return WorkoutResource::collection($workouts);
 
@@ -66,10 +67,12 @@ class WorkoutController extends Controller
     /**
      * Display the specified workout.
      */
-    public function show(Request $request, Workout $workout)
+    public function show(Request $request, $id)
     {
         try {
-            if ($workout->user_id !== $request->user()->id) {
+            $workout = Workout::findOrFail($id); // Will throw ModelNotFoundException if not found
+
+            if ($workout && $workout->user_id !== $request->user()->id) {
                 return response()->json([
                     'message' => 'You are not authorized to view this workout'
                 ], 403);
@@ -78,6 +81,11 @@ class WorkoutController extends Controller
             return response()->json([
                 'data' => new WorkoutResource($workout)
             ], 200);
+
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Workout not found'
+            ], 404);
 
         } catch (Exception $e) {
             return response()->json([
@@ -90,15 +98,35 @@ class WorkoutController extends Controller
     /**
      * Update the specified workout.
      */
-    public function update(UpdateWorkoutRequest $request, Workout $workout)
+    public function update(UpdateWorkoutRequest $request, $id)
     {
         try {
+
+            $workout = Workout::findOrFail($id);
+            if(!$workout){
+                return response()->json([
+                    'message' => 'Workout not found'
+                ], 404);
+            }
+
+            // Check if the workout belongs to the authenticated user
+            if ($workout && $workout->user_id !== $request->user()->id) {
+                return response()->json([
+                    'message' => 'You are not authorized to update this workout'
+                ], 403);
+            }
+
             $workout->update($request->validated());
 
             return response()->json([
                 'message' => 'Workout updated successfully',
                 'data' => new WorkoutResource($workout)
             ], 200);
+
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Workout not found'
+            ], 404);
 
         } catch (Exception $e) {
             return response()->json([
@@ -111,9 +139,11 @@ class WorkoutController extends Controller
     /**
      * Remove the specified workout.
      */
-    public function destroy(Request $request, Workout $workout)
+    public function destroy(Request $request, $id)
     {
         try {
+            $workout = Workout::findOrFail($id);
+
             if ($workout->user_id !== $request->user()->id) {
                 return response()->json([
                     'message' => 'You are not authorized to delete this workout'
@@ -126,7 +156,12 @@ class WorkoutController extends Controller
                 'message' => 'Workout deleted successfully'
             ], 200);
 
-        } catch (Exception $e) {
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Workout not found'
+            ], 404);
+
+        } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete workout',
                 'error' => $e->getMessage()
